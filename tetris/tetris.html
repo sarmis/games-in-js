@@ -1,0 +1,102 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tetris</title>
+    <script src="../res/lib/pixi.js"></script>
+    <style>
+        #game-container {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: center;
+            margin: 64px;            
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="game-container">        
+    </div>
+    
+    <script>        
+        window.addEventListener('load', () => {
+            console.log('Booting pixi.js')
+            
+            let app = new PIXI.Application({width: 640, height: 480});
+
+            document.getElementById('game-container').appendChild(app.view);
+            
+            // set autoresize to true in order to make sure that renderer.resize actually does what is should
+            app.renderer.autoResize = true;             
+            //app.renderer.resize(512, 512);
+            PIXI.loader
+                .add('block.png')
+                .load ( () => {
+                    console.log('ready...')
+                    let sprite = new PIXI.Sprite(PIXI.loader.resources['block.png'].texture);
+                    app.stage.addChild(sprite);
+
+                    keyboard('ArrowDown').press = () => {sprite.y = (sprite.y + 1) % 480};
+
+                    app.ticker.add( delta => {
+                        // game loop...
+                    //    if (key_down.isDown)
+                    //        sprite.y = (sprite.y + 1) % 480;
+                        //sprite.x = (sprite.x + Math.random() * 10 ) % 640;
+                        
+                    });
+
+                });            
+
+        });
+
+        function keyboard(value) {
+            let key = {};
+            key.value = value;
+            key.isDown = false;
+            key.isUp = true;
+            key.press = undefined;
+            key.release = undefined;
+            //The `downHandler`
+            key.downHandler = event => {
+                if (event.key === key.value) {
+                if (key.isUp && key.press) key.press();
+                key.isDown = true;
+                key.isUp = false;
+                event.preventDefault();
+                }
+            };
+
+            //The `upHandler`
+            key.upHandler = event => {
+                if (event.key === key.value) {
+                if (key.isDown && key.release) key.release();
+                key.isDown = false;
+                key.isUp = true;
+                event.preventDefault();
+                }
+            };
+
+            //Attach event listeners
+            const downListener = key.downHandler.bind(key);
+            const upListener = key.upHandler.bind(key);
+            
+            window.addEventListener(
+                "keydown", downListener, false
+            );
+            window.addEventListener(
+                "keyup", upListener, false
+            );
+            
+            // Detach event listeners
+            key.unsubscribe = () => {
+                window.removeEventListener("keydown", downListener);
+                window.removeEventListener("keyup", upListener);
+            };
+            
+            return key;
+        }
+    </script>
+</body>
+</html>
